@@ -15,20 +15,39 @@ export default class DashboardServices {
     try {
       await mssql.close();
       await mssql.connect(userDB)
-      const { datefrom, dateto } = req.body
+      const { datefrom, dateto, postcode, f4, prebookno } = req.body
+      const whereF4 = f4 ? `where noOrganization  = '${f4}'` : `where noOrganization like '${'%'}'`
+      const whereprebookno = prebookno ? `and noDepartment = '${prebookno}'` : `and noDepartment like '${'%'}'`
+      const wherepostcode = postcode ? `and F25 = '${postcode}'` : `and F25 like '${'%'}'`
       const data = await mssql.query(`
-        SELECT
-        C.F7
-        ,REPLACE(C.F25, ' ', '') as F25
-        ,SUBSTRING(C.F1,5,9)+ '/' +SUBSTRING(C.F1,1,4) as noOrganization
-        ,(C.PreBookNO+ C.F4) as noDepartment
-        ,L.ADDRESS1 as address
-        FROM [OA_OMB].[dbo].[PC_CONTENT] C
-        left outer join [PC_LETTERWF] L on L.CONTENTID = C.CONTENTID
-        where cast(C.F5 as date) BETWEEN '${datefrom}' AND '${dateto}'
-        and C.F25 != '' and C.F25 is not null
-        and (C.F25 like 'E%' or C.F25 like 'R%')
-        order by C.F25,C.PREBOOKNO desc
+      select
+        F7,
+        F25,
+        noOrganization,
+        noDepartment,
+        address
+      from
+        (SELECT
+          F7 = C.F7
+          ,F25 = case
+                  when REPLACE(C.F25, ' ', '') is null then case
+                    when
+                      REPLACE(C.F26, ' ', '') is null then C.F26
+                    end
+                  else C.F25
+                end
+          ,noOrganization = SUBSTRING(C.F1,5,9)+ '/' +SUBSTRING(C.F1,1,4)
+          ,noDepartment = (C.PreBookNO + C.F4)
+          ,address = case when (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) is null then '-' else (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) end
+          FROM [OA_OMB].[dbo].[PC_CONTENT] C
+          left outer join [PC_LETTERWF] L on L.CONTENTID = C.CONTENTID
+          where cast(C.F5 as date) BETWEEN '${datefrom}' AND '${dateto}'
+          and (C.F25 like 'E%' or C.F25 like 'R%')
+        ) TB1
+        ${whereF4}
+        ${whereprebookno}
+        ${wherepostcode}
+      order by F25,noOrganization desc;
       `);
       if (data) {
         res.status(HTTPSTATUS_OK).send(data.recordset);
