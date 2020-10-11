@@ -7,9 +7,7 @@
   "database": "system_inventory",
   "synchronize": true,
   "logging": false,
-  "entities": [
-    "dist/entities/**/*.js"
-  ],
+  "entities": ["dist/entities/**/*.js"],
   "cli": {
     "entitiesDir": "src/entities"
   }

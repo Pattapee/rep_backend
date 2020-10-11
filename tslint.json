@@ -16,9 +16,7 @@
       "match-declaration-order",
       "shorthand-first"
     ],
-    "variable-name":[
-      "allow-pascal-case"
-    ]
+    "variable-name": ["allow-pascal-case"]
   },
   "rulesDirectory": []
 }
