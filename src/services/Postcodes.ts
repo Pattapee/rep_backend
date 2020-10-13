@@ -30,7 +30,13 @@ export default class PostcodesServices {
         F25,
         noOrganization,
         noDepartment,
-        address
+        address,
+		    Substring(F25,1,1) as F25sort,
+		    addresssort = case
+                  when Substring(address, Charindex('กรุงเทพ', address), 7) = 'กรุงเทพ' then Substring(address, Charindex('กรุงเทพ', address), 7)
+                  when Substring(address, Charindex('กทม.', address), 7) = 'กทม.' then Substring(address, Charindex('กทม.', address), 7)
+				  else 'ไม่ระบุ'
+                end
       from
         (SELECT
           F7 = C.F7
@@ -40,7 +46,7 @@ export default class PostcodesServices {
                 end
           ,noOrganization = SUBSTRING(C.F1,5,9)+ '/' +SUBSTRING(C.F1,1,4)
           ,noDepartment = (C.PreBookNO + C.F4)
-          ,address = case when (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) is null then '-' else REPLACE((L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3),'   ','') end
+          ,address = case when (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) is null then 'ไม่ระบุ' else REPLACE((L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3),'   ','') end
           FROM [OA_OMB].[dbo].[PC_CONTENT] C
           left outer join [PC_LETTERWF] L on L.CONTENTID = C.CONTENTID
           where cast(C.F5 as date) BETWEEN '${datefrom}' AND '${dateto}'
@@ -49,7 +55,7 @@ export default class PostcodesServices {
         ${whereF4}
         ${whereprebookno}
         ${wherepostcode}
-      order by F25,noOrganization desc;
+      order by F25sort,addresssort asc;
       `);
       if (data) {
         res.status(HTTPSTATUS_OK).send(data.recordset);
