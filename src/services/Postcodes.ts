@@ -39,7 +39,7 @@ export default class PostcodesServices {
                 end
       from
         (SELECT
-          F7 = C.F7
+          F7 = case when C.F7 is null then '-' else C.F7 end
           ,F25 = case
                   when C.F25 is null or REPLACE(C.F25, ' ', '') = '' then REPLACE(C.F26, ' ', '')
                   when C.F26 is null or REPLACE(C.F26, ' ', '') = '' then REPLACE(C.F25, ' ', '')
