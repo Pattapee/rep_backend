@@ -1,17 +1,17 @@
-import { Request, Response } from 'express';
-import * as _ from 'lodash';
+import { Request, Response } from "express";
+import * as _ from "lodash";
 import {
   HTTPSTATUS_BADREQUEST,
   HTTPSTATUS_NOTFOUND,
   HTTPSTATUS_OK,
-} from '../constants/HttpStatus';
+} from "../constants/HttpStatus";
 
-const OAOMB = 'mssql://sa:Passw0rd!@192.168.2.21/OA_OMB';
-const CIM_PROD = 'mssql://sa:s@Ombc!m@192.168.100.24/CIM_PROD';
+const OAOMB = "mssql://sa:Passw0rd!@192.168.2.21/OA_OMB";
+const CIM_PROD = "mssql://sa:s@Ombc!m@192.168.100.24/CIM_PROD";
 
 export default class ChangeprebooknoServices {
   public static getContentbook = async (req: Request, res: Response) => {
-    const mssql = require('mssql');
+    const mssql = require("mssql");
     try {
       await mssql.close();
       await mssql.connect(CIM_PROD);
@@ -41,7 +41,7 @@ export default class ChangeprebooknoServices {
   };
 
   public static getPrebookname = async (req: Request, res: Response) => {
-    const mssql = require('mssql');
+    const mssql = require("mssql");
     try {
       await mssql.close();
       await mssql.connect(OAOMB);
@@ -67,7 +67,7 @@ export default class ChangeprebooknoServices {
   };
 
   public static getMaxF4 = async (req: Request, res: Response) => {
-    const mssql = require('mssql');
+    const mssql = require("mssql");
     try {
       await mssql.close();
       await mssql.connect(OAOMB);
@@ -98,13 +98,13 @@ export default class ChangeprebooknoServices {
   };
 
   public static updatepccontent = async (req: Request, res: Response) => {
-    const mssql = require('mssql');
+    const mssql = require("mssql");
     try {
       await mssql.close();
       await mssql.connect(OAOMB);
       const { F4, PREBOOKNO, F1RUN, CONTENTID } = req.body;
       const data = await mssql.query(`
-      UPDATE [OA_OMB].[dbo].[PC_CONTENT_120425]
+      UPDATE [OA_OMB].[dbo].[PC_CONTENT]
       SET F4 = '${F4}'
       ,PREBOOKNO = '${PREBOOKNO}'
       ,F1RUN = ${F1RUN}
@@ -123,7 +123,7 @@ export default class ChangeprebooknoServices {
   };
 
   public static updatepublishbook = async (req: Request, res: Response) => {
-    const mssql = require('mssql');
+    const mssql = require("mssql");
     try {
       await mssql.close();
       await mssql.connect(CIM_PROD);
