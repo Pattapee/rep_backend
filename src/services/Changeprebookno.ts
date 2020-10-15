@@ -15,7 +15,7 @@ export default class ChangeprebooknoServices {
     try {
       await mssql.close();
       await mssql.connect(CIM_PROD);
-      const { black_number } = req.body;
+      const { black_number, book_number } = req.body;
       const data = await mssql.query(`
       SELECT TOP 1 PB.publish_book_id
         ,C.black_number
@@ -26,6 +26,7 @@ export default class ChangeprebooknoServices {
       FROM [CIM_PROD].[dbo].[Publish_book] PB
       left outer join Complain C on C.complain_id = PB.complain_id
       where C.black_number = '${black_number}'
+      and PB.book_number = 'ผผ ${book_number}'
       order by PB.publish_book_id desc;
       `);
       if (data) {
