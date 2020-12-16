@@ -45,7 +45,7 @@ export default class PostcodesServices {
                   when C.F26 is null or REPLACE(C.F26, ' ', '') = '' then REPLACE(C.F25, ' ', '')
                 end
           ,noOrganization = SUBSTRING(C.F1,5,9)+ '/' +SUBSTRING(C.F1,1,4)
-          ,noDepartment = (C.PreBookNO + C.F4)
+          ,noDepartment = (REPLACE(C.PreBookNO,'ผผ ','') + SUBSTRING(C.F4, PATINDEX('%[^0]%', C.F4+'.'), LEN(C.F4)))
           ,address = case when (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) is null then 'ไม่ระบุ' else REPLACE((L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3),'   ','') end
           FROM [OA_OMB].[dbo].[PC_CONTENT] C
           left outer join [PC_LETTERWF] L on L.CONTENTID = C.CONTENTID
