@@ -8,6 +8,7 @@ routes.post('/postcodes', Postcodes.getAllPostcode)
 routes.get('/getprebookname', Changeprebookno.getPrebookname)
 routes.post('/getcontentbook', Changeprebookno.getContentbook)
 routes.post('/getmaxf4', Changeprebookno.getMaxF4)
+routes.post('/getbnidOffice', Changeprebookno.getBNIDOmbudsmanOffice)
 routes.post('/updatepccontent', Changeprebookno.updatepccontent)
 routes.post('/updatepublishbook', Changeprebookno.updatepublishbook)
 

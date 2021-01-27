@@ -1,3 +1,5 @@
+import dotenv from 'dotenv';
+dotenv.config();
 import { Request, Response } from 'express';
 import * as _ from 'lodash';
 import {
@@ -5,15 +7,14 @@ import {
   HTTPSTATUS_NOTFOUND,
   HTTPSTATUS_OK,
 } from '../constants/HttpStatus';
-
-const userDB = 'mssql://sa:Passw0rd!@192.168.2.21/OA_OMB';
+const OAOMB = process.env.DB_OA_OMB;
 
 export default class PostcodesServices {
   public static getAllPostcode = async (req: Request, res: Response) => {
     const mssql = require('mssql');
     try {
       await mssql.close();
-      await mssql.connect(userDB);
+      await mssql.connect(OAOMB);
       const { datefrom, dateto, postcode, f4, prebookno } = req.body;
       const whereF4 = f4
         ? `where noOrganization  = '${f4}'`
@@ -47,7 +48,7 @@ export default class PostcodesServices {
           ,noOrganization = SUBSTRING(C.F1,5,9)+ '/' +SUBSTRING(C.F1,1,4)
           ,noDepartment = (REPLACE(C.PreBookNO,'ผผ ','') + SUBSTRING(C.F4, PATINDEX('%[^0]%', C.F4+'.'), LEN(C.F4)))
           ,address = case when (L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3) is null then 'ไม่ระบุ' else REPLACE((L.ADDRESS1 + L.ADDRESS2+ L.ADDRESS3),'   ','') end
-          FROM [OA_OMB].[dbo].[PC_CONTENT] C
+          FROM [PC_CONTENT] C
           left outer join [PC_LETTERWF] L on L.CONTENTID = C.CONTENTID
           where cast(C.F5 as date) BETWEEN '${datefrom}' AND '${dateto}'
           and (C.F25 like 'E%' or C.F25 like 'R%' or C.F26 like 'E%' or C.F26 like 'R%')

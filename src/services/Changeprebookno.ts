@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import { Request, Response } from 'express';
 import * as _ from 'lodash';
 import {
@@ -5,9 +6,10 @@ import {
   HTTPSTATUS_NOTFOUND,
   HTTPSTATUS_OK,
 } from '../constants/HttpStatus';
+dotenv.config();
 
-const OAOMB = 'mssql://sa:Passw0rd!@192.168.2.21/OA_OMB';
-const CIM_PROD = 'mssql://sa:s@Ombc!m@192.168.100.24/CIM_PROD';
+const OAOMB = process.env.DB_OA_OMB;
+const CIM_PROD = process.env.DB_CIM;
 
 export default class ChangeprebooknoServices {
   public static getContentbook = async (req: Request, res: Response) => {
@@ -23,7 +25,7 @@ export default class ChangeprebooknoServices {
         ,PB.content_no
         ,C.complain_id
         ,PB.book_number
-      FROM [CIM_PROD].[dbo].[Publish_book] PB
+      FROM [Publish_book] PB
       left outer join Complain C on C.complain_id = PB.complain_id
       where C.black_number = '${black_number}'
       and PB.book_number = 'ผผ ${book_number}'
@@ -50,13 +52,44 @@ export default class ChangeprebooknoServices {
       SELECT [BNID]
         ,[DEPNAME]
         ,[BOOKNO]
-      FROM [OA_OMB].[dbo].[PC_BOOKNO] BN
-      where BN.BNID in (7,8,9,10,20,25,26)
-      and BN.Removed is null
-      order by BN.BOOKNO asc;
+        ,[ORDERID]
+      FROM [PC_BOOKNO] BN
+      where (BN.BOOKNO like '%ผผ 090%'
+        or BN.BOOKNO like '%ผผ 100%'
+        or BN.BOOKNO like '%ผผ 110%'
+        or BN.BOOKNO like '%ผผ 120%'
+        or BN.BOOKNO like '%ผผ 070%'
+        or BN.BOOKNO like '%ผผ 080%'
+        or BN.BOOKNO like '%ผผ 130%')
+      order by BN.ORDERID asc;
       `);
       if (data) {
         res.status(HTTPSTATUS_OK).send(data.recordset);
+      } else {
+        res.status(HTTPSTATUS_NOTFOUND).send({ data: false });
+      }
+      await mssql.close();
+    } catch (err) {
+      console.error(err);
+      res.status(HTTPSTATUS_BADREQUEST).send(err);
+    }
+  };
+
+  public static getBNIDOmbudsmanOffice = async (req: Request, res: Response) => {
+    const { prebookno } = req.body;
+    const mssql = require('mssql');
+    try {
+      await mssql.close();
+      await mssql.connect(OAOMB);
+      const data = await mssql.query(`
+      SELECT TOP 1
+        [BNID],
+        [BOOKNO]
+      FROM [PC_BOOKNO]
+      where BOOKNO  = '${prebookno.toString()}' and Removed is null
+      `);
+      if (data) {
+        res.status(HTTPSTATUS_OK).send(data.recordset[0]);
       } else {
         res.status(HTTPSTATUS_NOTFOUND).send({ data: false });
       }
@@ -79,7 +112,7 @@ export default class ChangeprebooknoServices {
         ,C.PREBOOKNO
         ,C.F1RUN
         ,C.F2
-      FROM [OA_OMB].[dbo].[PC_CONTENT] C
+      FROM [PC_CONTENT] C
       where
       YEAR(C.F2) = ${year}
       and C.ISCOMPLAIN = 1
@@ -105,7 +138,7 @@ export default class ChangeprebooknoServices {
       await mssql.connect(OAOMB);
       const { F4, PREBOOKNO, F1RUN, CONTENTID } = req.body;
       const data = await mssql.query(`
-      UPDATE [OA_OMB].[dbo].[PC_CONTENT]
+      UPDATE [PC_CONTENT]
       SET F4 = '${F4}'
       ,PREBOOKNO = '${PREBOOKNO}'
       ,F1RUN = ${F1RUN}
@@ -130,7 +163,7 @@ export default class ChangeprebooknoServices {
       await mssql.connect(CIM_PROD);
       const { book_number, CONTENTID } = req.body;
       const data = await mssql.query(`
-      UPDATE [CIM_PROD].[dbo].[Publish_book]
+      UPDATE [Publish_book]
       SET book_number = '${book_number}'
       WHERE CONTENTID = ${CONTENTID}
       `);
