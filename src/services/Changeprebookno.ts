@@ -9,7 +9,7 @@ import {
 dotenv.config();
 
 const OAOMB = process.env.DB_OA_OMB;
-const CIM_PROD = process.env.DB_CIM;
+const CIM_PROD = process.env.DB_CIM_PROD;
 
 export default class ChangeprebooknoServices {
   public static getContentbook = async (req: Request, res: Response) => {
@@ -115,7 +115,7 @@ export default class ChangeprebooknoServices {
       FROM [PC_CONTENT] C
       where
       YEAR(C.F2) = ${year}
-      and C.ISCOMPLAIN = 1
+      and C.FOLDERID = 63
       and C.F1RUN = ${F1RUN}
       order by F4 desc;
       `);
